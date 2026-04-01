@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+:root {
+  /* Surfaces */
+  --color-bg: #faf9f7;
+  --color-bg-elevated: #ffffff;
+  --color-bg-overlay: rgba(250, 249, 247, 0.92);
+
+  /* Text */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6b6560;
+  --color-text-tertiary: #9b9590;
+  --color-text-inverse: #faf9f7;
+
+  /* Borders */
+  --color-border: #e8e4df;
+  --color-border-subtle: #f0ece7;
+
+  /* Accent — warm muted tone */
+  --color-accent: #8b7355;
+  --color-accent-soft: rgba(139, 115, 85, 0.12);
+  --color-accent-hover: #705c44;
+
+  /* Activity area bubbles */
+  --color-area-fill: rgba(139, 115, 85, 0.15);
+  --color-area-stroke: rgba(139, 115, 85, 0.35);
+  --color-area-active: rgba(139, 115, 85, 0.25);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
+
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* MapLibre overrides for cleaner look */
+.maplibregl-ctrl-attrib {
+  font-size: 10px !important;
+  opacity: 0.5;
+}
+
+.maplibregl-ctrl-attrib:hover {
+  opacity: 1;
+}
+
+/* Hide default MapLibre navigation UI — we'll add custom controls */
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--color-border) !important;
+  overflow: hidden;
+}
+
+.maplibregl-ctrl-group button {
+  border-bottom: 1px solid var(--color-border) !important;
+}
