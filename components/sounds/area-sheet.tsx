@@ -13,27 +13,30 @@ const DISMISS_THRESHOLD = 80;
 
 export function AreaSheet({ area, onClose }: AreaSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const handleRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartY = useRef(0);
   const isDragging = useRef(false);
+  const dragFromScroll = useRef(false);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   // Close on escape
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     }
     if (area) {
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
-  }, [area, onClose]);
+  }, [area]);
 
   // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (sheetRef.current && !sheetRef.current.contains(e.target as Node)) {
-        onClose();
+        onCloseRef.current();
       }
     }
     if (area) {
@@ -45,36 +48,82 @@ export function AreaSheet({ area, onClose }: AreaSheetProps) {
         document.removeEventListener("click", handleClick);
       };
     }
-  }, [area, onClose]);
+  }, [area]);
 
   // Reset drag offset when area changes
   useEffect(() => {
     setDragOffset(0);
   }, [area]);
 
-  // Touch drag-to-dismiss on the handle area
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    dragStartY.current = e.touches[0].clientY;
+  // Touch drag-to-dismiss — works on handle and on scroll content when at top
+  const startDrag = useCallback((clientY: number, fromScroll = false) => {
+    dragStartY.current = clientY;
     isDragging.current = true;
+    dragFromScroll.current = fromScroll;
   }, []);
+
+  const moveDrag = useCallback((clientY: number) => {
+    if (!isDragging.current) return;
+    const delta = clientY - dragStartY.current;
+    if (delta > 0) setDragOffset(delta);
+  }, []);
+
+  const endDrag = useCallback((currentOffset: number) => {
+    isDragging.current = false;
+    dragFromScroll.current = false;
+    if (currentOffset > DISMISS_THRESHOLD) {
+      onCloseRef.current();
+    }
+    setDragOffset(0);
+  }, []);
+
+  // Handle — always draggable
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    startDrag(e.touches[0].clientY);
+  }, [startDrag]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isDragging.current) return;
     const delta = e.touches[0].clientY - dragStartY.current;
-    // Only allow dragging down
-    setDragOffset(Math.max(0, delta));
+    if (delta > 0) {
+      e.preventDefault();
+      setDragOffset(delta);
+    }
   }, []);
 
-  const handleTouchEnd = useCallback(() => {
-    isDragging.current = false;
-    if (dragOffset > DISMISS_THRESHOLD) {
-      onClose();
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const offset = e.changedTouches[0].clientY - dragStartY.current;
+    endDrag(Math.max(0, offset));
+  }, [endDrag]);
+
+  // Scroll content — only drag when already at top
+  const scrollTouchStart = useCallback((e: React.TouchEvent) => {
+    const atTop = (scrollRef.current?.scrollTop ?? 0) === 0;
+    if (atTop) startDrag(e.touches[0].clientY, true);
+  }, [startDrag]);
+
+  const scrollTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging.current || !dragFromScroll.current) return;
+    const delta = e.touches[0].clientY - dragStartY.current;
+    if (delta > 0) {
+      // Prevent scroll bounce and move the sheet instead
+      e.preventDefault();
+      setDragOffset(delta);
+    } else {
+      // User is scrolling up — hand off to native scroll
+      isDragging.current = false;
+      setDragOffset(0);
     }
-    setDragOffset(0);
-  }, [dragOffset, onClose]);
+  }, []);
+
+  const scrollTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!dragFromScroll.current) return;
+    const offset = e.changedTouches[0].clientY - dragStartY.current;
+    endDrag(Math.max(0, offset));
+  }, [endDrag]);
 
   const sheetStyle = dragOffset > 0
-    ? { transform: `translateY(${dragOffset}px)`, transition: isDragging.current ? "none" : undefined }
+    ? { transform: `translateY(${dragOffset}px)`, transition: "none" }
     : undefined;
 
   return (
@@ -101,7 +150,6 @@ export function AreaSheet({ area, onClose }: AreaSheetProps) {
       >
         {/* Handle — drag target */}
         <div
-          ref={handleRef}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -131,7 +179,13 @@ export function AreaSheet({ area, onClose }: AreaSheetProps) {
         </div>
 
         {/* Sound list */}
-        <div className="overflow-y-auto px-5 pb-5 space-y-3">
+        <div
+          ref={scrollRef}
+          onTouchStart={scrollTouchStart}
+          onTouchMove={scrollTouchMove}
+          onTouchEnd={scrollTouchEnd}
+          className="overflow-y-auto px-5 pb-5 space-y-3"
+        >
           {area?.sounds.map((sound) => (
             <SoundCard key={sound.id} sound={sound} />
           ))}

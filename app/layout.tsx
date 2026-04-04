@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
