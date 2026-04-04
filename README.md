@@ -54,7 +54,7 @@ The app will show 10 seed sound posts in NYC. No database or auth features.
 2. Run the SQL migration from `supabase/migrations/001_initial_schema.sql` in the SQL Editor
 3. Create a storage bucket named `audio`, set to public
 4. Add storage RLS policies (see migration file comments)
-5. Copy `.env.local.example` to `.env.local` and fill in your credentials:
+5. Copy `env.example` to `.env.local` and fill in your credentials:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -120,7 +120,7 @@ supabase/
 
 ## Current Status
 
-All core features are implemented:
+All core features are implemented and live:
 - Map homepage with H3 area bubbles
 - Authentication (signup, login, session management)
 - Upload flow (file validation, location picker with reticle, metadata)
@@ -129,5 +129,3 @@ All core features are implemented:
 - Public profile page
 - Settings page
 - Report flow
-
-**To go live:** Create a Supabase project and configure `.env.local`.
