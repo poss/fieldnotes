@@ -4,6 +4,7 @@ import { getProfileByUsername } from "@/lib/data/profiles";
 import { getSoundsByUser } from "@/lib/data/sounds";
 import { ProfileView } from "@/components/profile/profile-view";
 import { siteConfig } from "@/lib/config/site";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 interface Props {
   params: Promise<{ username: string }>;
@@ -28,5 +29,12 @@ export default async function ProfilePage({ params }: Props) {
 
   const sounds = await getSoundsByUser(profile.id);
 
-  return <ProfileView profile={profile} sounds={sounds} />;
+  let isOwnProfile = false;
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    isOwnProfile = user?.id === profile.id;
+  }
+
+  return <ProfileView profile={profile} sounds={sounds} isOwnProfile={isOwnProfile} />;
 }

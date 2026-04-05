@@ -6,6 +6,7 @@ import type { AreaSound } from "@/components/map/map-view";
 interface ProfileViewProps {
   profile: Profile;
   sounds: SoundPostWithProfile[];
+  isOwnProfile?: boolean;
 }
 
 function toAreaSound(s: SoundPostWithProfile): AreaSound {
@@ -22,7 +23,7 @@ function toAreaSound(s: SoundPostWithProfile): AreaSound {
   };
 }
 
-export function ProfileView({ profile, sounds }: ProfileViewProps) {
+export function ProfileView({ profile, sounds, isOwnProfile }: ProfileViewProps) {
   const memberSince = new Date(profile.created_at).toLocaleDateString(
     "en-US",
     { month: "long", year: "numeric" }
@@ -55,9 +56,19 @@ export function ProfileView({ profile, sounds }: ProfileViewProps) {
           <h1 className="text-lg font-medium text-[var(--color-text-primary)]">
             {profile.display_name || profile.username}
           </h1>
-          <p className="text-[13px] text-[var(--color-text-tertiary)] mt-0.5">
-            @{profile.username}
-          </p>
+          <div className="flex items-center gap-3 mt-0.5">
+            <p className="text-[13px] text-[var(--color-text-tertiary)]">
+              @{profile.username}
+            </p>
+            {isOwnProfile && (
+              <Link
+                href="/settings"
+                className="text-[12px] text-[var(--color-text-tertiary)] hover:text-[var(--color-accent)] transition-colors"
+              >
+                Edit profile
+              </Link>
+            )}
+          </div>
 
           {profile.bio && (
             <p className="text-[14px] text-[var(--color-text-secondary)] mt-3 leading-relaxed">

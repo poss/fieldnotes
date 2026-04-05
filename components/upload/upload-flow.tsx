@@ -22,6 +22,7 @@ export function UploadFlow({ userId }: UploadFlowProps) {
   const [step, setStep] = useState<Step>("file");
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [uploadPhase, setUploadPhase] = useState<"uploading" | "saving">("uploading");
 
   // File state
   const [file, setFile] = useState<File | null>(null);
@@ -61,6 +62,7 @@ export function UploadFlow({ userId }: UploadFlowProps) {
 
     submittingRef.current = true;
     setStep("submitting");
+    setUploadPhase("uploading");
     setError(null);
 
     try {
@@ -78,6 +80,8 @@ export function UploadFlow({ userId }: UploadFlowProps) {
         });
 
       if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+
+      setUploadPhase("saving");
 
       // Insert metadata via Server Action (validated + rate-limited server-side)
       const result = await createSoundPost({
@@ -125,7 +129,8 @@ export function UploadFlow({ userId }: UploadFlowProps) {
               {step === "file" && "Choose an audio file."}
               {step === "location" && "Set the location."}
               {step === "details" && "Add details."}
-              {step === "submitting" && "Uploading..."}
+              {step === "submitting" && uploadPhase === "uploading" && "Uploading audio..."}
+              {step === "submitting" && uploadPhase === "saving" && "Saving..."}
             </p>
           </div>
           <Link
@@ -167,9 +172,13 @@ export function UploadFlow({ userId }: UploadFlowProps) {
         {step === "submitting" && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
-            <p className="mt-4 text-[13px] text-[var(--color-text-tertiary)]">
-              Uploading your sound...
+            <p className="mt-4 text-[13px] text-[var(--color-text-secondary)]">
+              {uploadPhase === "uploading" ? "Uploading audio…" : "Saving…"}
             </p>
+            <div className="flex gap-1.5 mt-3">
+              <div className={`w-1.5 h-1.5 rounded-full transition-colors ${uploadPhase === "uploading" ? "bg-[var(--color-accent)]" : "bg-[var(--color-border)]"}`} />
+              <div className={`w-1.5 h-1.5 rounded-full transition-colors ${uploadPhase === "saving" ? "bg-[var(--color-accent)]" : "bg-[var(--color-border)]"}`} />
+            </div>
           </div>
         )}
       </div>

@@ -52,6 +52,14 @@ export function SoundCard({ sound }: SoundCardProps) {
     }
   }
 
+  function handleProgressClick(e: React.MouseEvent<HTMLDivElement>) {
+    const audio = audioRef.current;
+    if (!audio || !audio.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const fraction = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = fraction * audio.duration;
+  }
+
   return (
     <div className="group rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg)] p-4 transition-colors hover:border-[var(--color-border)]">
       <div className="flex items-start gap-3">
@@ -110,15 +118,16 @@ export function SoundCard({ sound }: SoundCardProps) {
         </div>
       </div>
 
-      {/* Progress bar */}
-      {isPlaying && (
-        <div className="mt-3 h-0.5 bg-[var(--color-border-subtle)] rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[var(--color-accent)] transition-[width] duration-200"
-            style={{ width: `${progress * 100}%` }}
-          />
-        </div>
-      )}
+      {/* Progress bar — always rendered to prevent layout shift */}
+      <div
+        onClick={hasAudio ? handleProgressClick : undefined}
+        className={`mt-3 h-0.5 bg-[var(--color-border-subtle)] rounded-full overflow-hidden ${hasAudio ? "cursor-pointer" : ""} transition-opacity duration-200 ${isPlaying || progress > 0 ? "opacity-100" : "opacity-0"}`}
+      >
+        <div
+          className="h-full bg-[var(--color-accent)] transition-[width] duration-200"
+          style={{ width: `${progress * 100}%` }}
+        />
+      </div>
 
       {/* Hidden audio element */}
       {hasAudio && (

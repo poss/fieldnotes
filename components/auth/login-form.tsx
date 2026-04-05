@@ -63,12 +63,20 @@ export function LoginForm() {
       </div>
 
       <div>
-        <label
-          htmlFor="password"
-          className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-1.5"
-        >
-          Password
-        </label>
+        <div className="flex items-baseline justify-between mb-1.5">
+          <label
+            htmlFor="password"
+            className="block text-[13px] font-medium text-[var(--color-text-secondary)]"
+          >
+            Password
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-[12px] text-[var(--color-text-tertiary)] hover:text-[var(--color-accent)] transition-colors"
+          >
+            Forgot password?
+          </Link>
+        </div>
         <input
           id="password"
           type="password"
@@ -105,7 +113,15 @@ export function LoginForm() {
           transition-colors
         "
       >
-        {loading ? "Logging in..." : "Log in"}
+        {loading ? (
+        <span className="flex items-center justify-center gap-2">
+          <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+          </svg>
+          Logging in…
+        </span>
+      ) : "Log in"}
       </button>
 
       <p className="text-center text-[13px] text-[var(--color-text-tertiary)]">

@@ -90,6 +90,9 @@ export function SettingsForm({ profile }: SettingsFormProps) {
           "
           placeholder="Your name"
         />
+        <p className="text-right mt-1 text-[11px] text-[var(--color-text-tertiary)]">
+          {displayName.length}/{siteConfig.validation.maxUsernameLength}
+        </p>
       </div>
 
       {/* Bio */}
@@ -124,7 +127,7 @@ export function SettingsForm({ profile }: SettingsFormProps) {
 
       {error && <p className="text-[13px] text-red-600">{error}</p>}
       {saved && (
-        <p className="text-[13px] text-green-600">Saved.</p>
+        <p className="text-[13px] text-green-600 transition-opacity duration-500">Saved.</p>
       )}
 
       <div className="flex gap-3 pt-2">
@@ -138,7 +141,7 @@ export function SettingsForm({ profile }: SettingsFormProps) {
             transition-colors
           "
         >
-          Back to map
+          ← Map
         </Link>
         <button
           type="submit"

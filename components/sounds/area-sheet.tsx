@@ -186,9 +186,15 @@ export function AreaSheet({ area, onClose }: AreaSheetProps) {
           onTouchEnd={scrollTouchEnd}
           className="overflow-y-auto px-5 pb-5 space-y-3"
         >
-          {area?.sounds.map((sound) => (
-            <SoundCard key={sound.id} sound={sound} />
-          ))}
+          {area?.sounds.length === 0 ? (
+            <p className="text-[13px] text-[var(--color-text-tertiary)] py-4">
+              No sounds in this area yet.
+            </p>
+          ) : (
+            area?.sounds.map((sound) => (
+              <SoundCard key={sound.id} sound={sound} />
+            ))
+          )}
         </div>
       </div>
     </div>

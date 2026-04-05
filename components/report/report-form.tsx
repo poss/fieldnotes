@@ -64,6 +64,9 @@ export function ReportForm({ soundId }: ReportFormProps) {
         <p className="text-[13px] text-[var(--color-text-tertiary)] mt-2">
           Thank you for helping keep FieldNotes safe.
         </p>
+        <p className="text-[13px] text-[var(--color-text-tertiary)] mt-1">
+          Reports are reviewed manually. We&apos;ll take action if the content violates our guidelines.
+        </p>
         <Link
           href="/"
           className="
