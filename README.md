@@ -1,9 +1,5 @@
 # FieldNotes
 
-![Status](https://img.shields.io/badge/status-work%20in%20progress-orange)
-
-> **Work in progress.** Core features are built and live, but the app is still being iterated on. Expect rough edges.
-
 A public ambient audio map. Upload short sound clips, attach them to places, and explore how the world sounds.
 
 ## Concept
@@ -73,6 +69,22 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Seed data
+
+To populate the database with realistic test data, add your Supabase service role key to `.env.local`:
+
+```
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+Then run:
+
+```bash
+npx tsx --env-file=.env.local scripts/seed-db.ts
+```
+
+This creates 4 test users and 10 sound posts across NYC with silent audio placeholders.
+
 ## How It Works
 
 ### Uploads
@@ -95,6 +107,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ### Routes
 - `/` — Map homepage
 - `/login`, `/signup` — Authentication
+- `/forgot-password`, `/reset-password` — Password reset
 - `/upload` — Upload a sound (protected)
 - `/sounds/[id]` — Sound detail with large player
 - `/u/[username]` — Public profile
@@ -106,7 +119,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ```
 app/              Routes (App Router)
 components/
-  auth/           Login, signup, auth button
+  auth/           Login, signup, password reset
   map/            MapLibre map shell, view wrapper
   sounds/         Area sheet, sound cards, sound detail
   upload/         File picker, location picker, metadata form
@@ -118,18 +131,8 @@ lib/
   data/           DB queries (sounds, profiles) + seed data
   geo/area.ts     H3 spatial index helpers
   utils/          Formatting helpers
+scripts/
+  seed-db.ts      Seed the database with test users and sounds
 supabase/
   migrations/     SQL schema
 ```
-
-## Current Status
-
-All core features are implemented and live:
-- Map homepage with H3 area bubbles
-- Authentication (signup, login, session management)
-- Upload flow (file validation, location picker with reticle, metadata)
-- Audio playback with progress bar
-- Sound detail page
-- Public profile page
-- Settings page
-- Report flow
