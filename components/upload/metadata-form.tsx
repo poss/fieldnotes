@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState, useEffect } from "react";
 import { siteConfig } from "@/lib/config/site";
 import { formatDuration } from "@/lib/utils/format";
 
@@ -26,6 +27,36 @@ export function MetadataForm({
   file,
   duration,
 }: MetadataFormProps) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    function onEnded() { setIsPlaying(false); }
+    audio.addEventListener("ended", onEnded);
+    return () => {
+      audio.removeEventListener("ended", onEnded);
+      audio.pause();
+      audioRef.current = null;
+      URL.revokeObjectURL(url);
+    };
+  }, [file]);
+
+  function togglePreview() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      audio.play();
+      setIsPlaying(true);
+    }
+  }
+
   const titleValid = title.trim().length > 0;
   const titleAtLimit =
     title.length > siteConfig.validation.maxTitleLength;
@@ -38,20 +69,29 @@ export function MetadataForm({
       {/* File summary */}
       {file && (
         <div className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] bg-[var(--color-accent-soft)]">
-          <div className="w-8 h-8 rounded-full bg-[var(--color-accent)] flex items-center justify-center flex-shrink-0">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="2"
-            >
-              <path d="M9 18V5l12-2v13" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="6" cy="18" r="3" />
-              <circle cx="18" cy="16" r="3" />
-            </svg>
-          </div>
+          <button
+            type="button"
+            onClick={togglePreview}
+            className="
+              w-8 h-8 rounded-full flex-shrink-0
+              flex items-center justify-center
+              bg-[var(--color-accent)]
+              text-[var(--color-text-inverse)]
+              hover:bg-[var(--color-accent-hover)]
+              transition-colors
+            "
+          >
+            {isPlaying ? (
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+                <rect x="2" y="1" width="3" height="10" rx="1" />
+                <rect x="7" y="1" width="3" height="10" rx="1" />
+              </svg>
+            ) : (
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+                <path d="M3 1.5v9l7.5-4.5L3 1.5z" />
+              </svg>
+            )}
+          </button>
           <div className="min-w-0">
             <p className="text-[13px] font-medium text-[var(--color-text-primary)] truncate">
               {file.name}

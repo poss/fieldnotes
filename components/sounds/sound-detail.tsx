@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { SoundPostWithProfile } from "@/lib/supabase/types";
 import { getAudioUrl } from "@/lib/supabase/storage";
 import { formatDuration, formatRelativeDate } from "@/lib/utils/format";
+import { generateWaveform } from "@/lib/utils/waveform";
 
 interface SoundDetailProps {
   sound: SoundPostWithProfile;
@@ -62,6 +63,9 @@ export function SoundDetail({ sound }: SoundDetailProps) {
   }
 
   const profile = sound.profiles;
+
+  const DETAIL_BARS = 80;
+  const waveform = useMemo(() => generateWaveform(sound.id, DETAIL_BARS), [sound.id]);
 
   return (
     <div className="min-h-full bg-[var(--color-bg)]">
@@ -133,14 +137,28 @@ export function SoundDetail({ sound }: SoundDetailProps) {
               )}
             </button>
             <div className="flex-1">
-              {/* Progress bar */}
+              {/* Waveform */}
               <div
                 onClick={handleProgressClick}
-                className="h-2 bg-[var(--color-border)] rounded-full overflow-hidden cursor-pointer"
+                className="relative h-16 w-full flex items-end gap-[1px] cursor-pointer overflow-hidden rounded-sm"
               >
+                {waveform.map((barHeight, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-full transition-colors duration-75"
+                    style={{
+                      height: `${barHeight * 100}%`,
+                      backgroundColor:
+                        i / DETAIL_BARS < progress
+                          ? "var(--color-accent)"
+                          : "var(--color-border)",
+                    }}
+                  />
+                ))}
+                {/* Playhead cursor */}
                 <div
-                  className="h-full bg-[var(--color-accent)] transition-[width] duration-100"
-                  style={{ width: `${progress * 100}%` }}
+                  className="absolute top-0 bottom-0 w-px bg-[var(--color-accent)] opacity-60 pointer-events-none"
+                  style={{ left: `${progress * 100}%` }}
                 />
               </div>
               <div className="flex justify-between mt-1.5 text-[11px] text-[var(--color-text-tertiary)]">

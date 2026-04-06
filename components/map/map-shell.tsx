@@ -75,30 +75,32 @@ export function MapShell({ areaGroups, onAreaSelect }: MapShellProps) {
 
       map.addSource("area-centers", { type: "geojson", data: { type: "FeatureCollection", features: pointFeatures } });
 
-      // Pulse ring layer — renders behind the solid dot
-      map.addLayer({
-        id: "area-dots-pulse",
-        type: "circle",
-        source: "area-centers",
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "rgba(139, 115, 85, 0)",
-          "circle-stroke-color": "rgba(139, 115, 85, 0.5)",
-          "circle-stroke-width": 1.5,
-          "circle-opacity": 0.35,
-        },
-      });
+      // Three ambient ripple rings — staggered phases create continuous outward radiation
+      for (let i = 0; i < 3; i++) {
+        map.addLayer({
+          id: `area-pulse-${i}`,
+          type: "circle",
+          source: "area-centers",
+          paint: {
+            "circle-radius": 6,
+            "circle-color": "rgba(139, 115, 85, 0)",
+            "circle-stroke-color": "rgba(139, 115, 85, 0.5)",
+            "circle-stroke-width": 1,
+            "circle-opacity": 0,
+          },
+        });
+      }
 
       map.addLayer({
         id: "area-dots",
         type: "circle",
         source: "area-centers",
         paint: {
-          "circle-radius": ["interpolate", ["linear"], ["get", "count"], 1, 6, 5, 10],
-          "circle-color": "rgba(139, 115, 85, 0.5)",
-          "circle-stroke-color": "rgba(139, 115, 85, 0.7)",
+          "circle-radius": ["interpolate", ["linear"], ["get", "count"], 1, 5, 5, 9],
+          "circle-color": "rgba(139, 115, 85, 0.45)",
+          "circle-stroke-color": "rgba(139, 115, 85, 0.65)",
           "circle-stroke-width": 1.5,
-          "circle-blur": 0.3,
+          "circle-blur": 0.2,
         },
       });
       map.addLayer({
@@ -149,16 +151,25 @@ export function MapShell({ areaGroups, onAreaSelect }: MapShellProps) {
       map.on("mouseenter", "area-dots", () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", "area-dots", () => { map.getCanvas().style.cursor = ""; });
 
-      // Sonar ping animation
-      let phase = 0;
+      // Three-ring ambient ripple — continuous outward radiation
+      const PHASE_SPEED = 0.004; // ~4.2s cycle per ring
+      const MIN_RADIUS = 6;
+      const MAX_RADIUS = 22;
+      const MAX_OPACITY = 0.22;
+      const RING_PHASES = [0, 1 / 3, 2 / 3];
+
+      let masterPhase = 0;
       let animFrameId: number;
+
       function animatePulse() {
-        phase = (phase + 0.008) % 1;
-        const radius = 6 + phase * 14;
-        const opacity = (1 - phase) * 0.35;
-        if (map.getLayer("area-dots-pulse")) {
-          map.setPaintProperty("area-dots-pulse", "circle-radius", radius);
-          map.setPaintProperty("area-dots-pulse", "circle-opacity", opacity);
+        masterPhase = (masterPhase + PHASE_SPEED) % 1;
+        for (let i = 0; i < 3; i++) {
+          const phase = (masterPhase + RING_PHASES[i]) % 1;
+          const layerId = `area-pulse-${i}`;
+          if (map.getLayer(layerId)) {
+            map.setPaintProperty(layerId, "circle-radius", MIN_RADIUS + phase * (MAX_RADIUS - MIN_RADIUS));
+            map.setPaintProperty(layerId, "circle-opacity", (1 - phase) * MAX_OPACITY);
+          }
         }
         animFrameId = requestAnimationFrame(animatePulse);
       }

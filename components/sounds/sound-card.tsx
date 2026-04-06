@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { AreaSound } from "@/components/map/map-view";
 import { formatDuration, formatRelativeDate } from "@/lib/utils/format";
 import { getAudioUrl } from "@/lib/supabase/storage";
+import { generateWaveform } from "@/lib/utils/waveform";
 
 interface SoundCardProps {
   sound: AreaSound;
@@ -16,6 +17,9 @@ export function SoundCard({ sound }: SoundCardProps) {
   const [progress, setProgress] = useState(0);
 
   const hasAudio = !!sound.audioPath;
+
+  const CARD_BARS = 40;
+  const waveform = useMemo(() => generateWaveform(sound.id, CARD_BARS), [sound.id]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -118,15 +122,29 @@ export function SoundCard({ sound }: SoundCardProps) {
         </div>
       </div>
 
-      {/* Progress bar — always rendered to prevent layout shift */}
+      {/* Waveform progress — collapses to hairline when idle */}
       <div
         onClick={hasAudio ? handleProgressClick : undefined}
-        className={`mt-3 h-0.5 bg-[var(--color-border-subtle)] rounded-full overflow-hidden ${hasAudio ? "cursor-pointer" : ""} transition-opacity duration-200 ${isPlaying || progress > 0 ? "opacity-100" : "opacity-0"}`}
+        className={[
+          "mt-3 w-full flex items-end gap-[1px] overflow-hidden rounded-sm",
+          "transition-[height,opacity] duration-300",
+          hasAudio ? "cursor-pointer" : "",
+          isPlaying || progress > 0 ? "h-7 opacity-100" : "h-0.5 opacity-0",
+        ].join(" ")}
       >
-        <div
-          className="h-full bg-[var(--color-accent)] transition-[width] duration-200"
-          style={{ width: `${progress * 100}%` }}
-        />
+        {waveform.map((barHeight, i) => (
+          <div
+            key={i}
+            className="flex-1 rounded-full transition-colors duration-100"
+            style={{
+              height: `${barHeight * 100}%`,
+              backgroundColor:
+                i / CARD_BARS < progress
+                  ? "var(--color-accent)"
+                  : "var(--color-border-subtle)",
+            }}
+          />
+        ))}
       </div>
 
       {/* Hidden audio element */}
