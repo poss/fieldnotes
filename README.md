@@ -1,5 +1,9 @@
 # FieldNotes
 
+![Status](https://img.shields.io/badge/status-work%20in%20progress-orange)
+
+> **Work in progress.** The core app is built but still being tested and polished. Expect rough edges.
+
 A public ambient audio map. Upload short sound clips, attach them to places, and explore how the world sounds.
 
 ## Concept
